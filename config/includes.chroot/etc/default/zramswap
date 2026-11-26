@@ -1,0 +1,6 @@
+# Low-RAM defaults for OldDeb
+
+# zram swap: half of RAM, zstd-compressed
+ALGO=zstd
+PERCENT=50
+PRIORITY=100

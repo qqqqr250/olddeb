@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+
+if ! id user >/dev/null 2>&1; then
+    useradd -m -s /bin/bash user
+fi
+
+echo 'user:live' | chpasswd
+chage -M 99999 user 2>/dev/null || true
+
+for g in sudo users plugdev cdrom audio video dialout netdev; do
+    if getent group "$g" >/dev/null 2>&1; then
+        usermod -aG "$g" user
+    fi
+done
+
+cat > /etc/sudoers.d/olddeb-live <<'EOF'
+user ALL=(ALL) NOPASSWD: ALL
+EOF
+chmod 0440 /etc/sudoers.d/olddeb-live
+
+passwd -l root >/dev/null 2>&1 || true
+
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin user --noclear %I $TERM
+EOF

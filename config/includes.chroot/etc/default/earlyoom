@@ -1,0 +1,2 @@
+# Kill the biggest process before the kernel OOM killer freezes the machine.
+EARLYOOM_ARGS="-m 5 -s 5"

@@ -1,0 +1,13 @@
+[Unit]
+Description=Ensure a usable /etc/resolv.conf before networking
+Before=dhcpcd.service network.target
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'if [ ! -s /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then rm -f /etc/resolv.conf; printf "nameserver 1.1.1.1\nnameserver 9.9.9.9\n" > /etc/resolv.conf; fi'
+
+[Install]
+WantedBy=sysinit.target

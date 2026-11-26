@@ -1,0 +1,65 @@
+#!/bin/sh
+set -e
+
+# --- identity ---
+cat > /usr/lib/os-release <<'EOF'
+PRETTY_NAME="OldDeb 12 (bookworm) CLI"
+NAME="OldDeb"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=olddeb
+ID_LIKE=debian
+ANSI_COLOR="0;34"
+HOME_URL="https://example.invalid/olddeb"
+EOF
+ln -sf ../usr/lib/os-release /etc/os-release
+
+cat > /etc/issue <<'EOF'
+OldDeb 12 (bookworm) CLI  \n  \l
+EOF
+
+cat > /etc/motd <<'EOF'
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    sudo zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+EOF
+
+# --- timezone / locale / keyboard ---
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+echo UTC > /etc/timezone
+
+if ! grep -q '^en_US.UTF-8 UTF-8' /etc/locale.gen 2>/dev/null; then
+    sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    grep -q '^en_US.UTF-8 UTF-8' /etc/locale.gen || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
+fi
+locale-gen
+cat > /etc/default/locale <<'EOF'
+LANG=en_US.UTF-8
+EOF
+
+cat > /etc/default/keyboard <<'EOF'
+XKBMODEL="pc105"
+XKBLAYOUT="us"
+XKBVARIANT=""
+XKBOPTIONS=""
+BACKSPACE="guess"
+EOF
+
+# --- hostname defaults (live-config overrides from the boot command line) ---
+echo olddeb > /etc/hostname
+cat > /etc/hosts <<'EOF'
+127.0.0.1 localhost
+127.0.1.1 olddeb
+::1 localhost ip6-localhost ip6-loopback
+EOF

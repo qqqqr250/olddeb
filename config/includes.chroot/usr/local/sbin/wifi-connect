@@ -1,0 +1,49 @@
+#!/bin/bash
+# Connect to a Wi-Fi network using wpa_supplicant + dhcpcd.
+set -euo pipefail
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo -- "$0" "$@"
+fi
+
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+    echo "usage: wifi-connect SSID [PASSWORD]" >&2
+    exit 1
+fi
+
+# Some laptops ship with the radio blocked.
+rfkill unblock wifi 2>/dev/null || true
+
+SSID="$1"
+PASS="${2:-}"
+
+IFACE="$(iw dev 2>/dev/null | awk '/Interface/{print $2; exit}')"
+if [ -z "$IFACE" ]; then
+    echo "No wireless interface found (iw dev)." >&2
+    exit 1
+fi
+
+mkdir -p /etc/wpa_supplicant
+CONF="/etc/wpa_supplicant/wpa_supplicant-$IFACE.conf"
+
+if [ -n "$PASS" ]; then
+    wpa_passphrase "$SSID" "$PASS" | sed '/#psk=/d' > "$CONF"
+else
+    cat > "$CONF" <<EOF
+network={
+    ssid="$SSID"
+    key_mgmt=NONE
+}
+EOF
+fi
+chmod 600 "$CONF"
+
+systemctl enable "wpa_supplicant@$IFACE.service" >/dev/null 2>&1 || true
+systemctl restart "wpa_supplicant@$IFACE.service"
+systemctl restart dhcpcd.service
+
+echo "Connecting to '$SSID' on $IFACE ..."
+sleep 3
+ip -br address show "$IFACE" || true

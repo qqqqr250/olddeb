@@ -1,0 +1,205 @@
+#!/bin/bash
+# OldDeb clone installer: partitions a disk, copies the live system, installs GRUB.
+set -euo pipefail
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export DEBIAN_FRONTEND=noninteractive
+
+if [ "$(id -u)" -ne 0 ]; then
+    exec sudo -- "$0" "$@"
+fi
+
+TITLE="OldDeb installer"
+MNT=""
+MNT_SQ=""
+
+cleanup() {
+    set +e
+    if [ -n "$MNT" ] && mountpoint -q "$MNT" 2>/dev/null; then
+        for d in dev proc sys run; do
+            umount "$MNT/$d" 2>/dev/null
+        done
+        umount -R "$MNT" 2>/dev/null
+    fi
+    [ -n "$MNT" ] && rmdir "$MNT" 2>/dev/null
+    if [ -n "$MNT_SQ" ] && mountpoint -q "$MNT_SQ" 2>/dev/null; then
+        umount "$MNT_SQ" 2>/dev/null
+    fi
+    [ -n "$MNT_SQ" ] && rmdir "$MNT_SQ" 2>/dev/null
+    return 0
+}
+trap cleanup EXIT
+
+die() {
+    whiptail --title "$TITLE" --msgbox "ERROR: $1" 18 76 || true
+    exit 1
+}
+
+# --- locate the live squashfs ---
+SQ=""
+for d in /run/live/rootfs/filesystem.squashfs /lib/live/mount/rootfs/filesystem.squashfs; do
+    if mountpoint -q "$d" 2>/dev/null; then
+        SQ="$d"
+        break
+    fi
+done
+if [ -z "$SQ" ]; then
+    SQFILE="$(find /run/live /lib/live -maxdepth 4 -name filesystem.squashfs 2>/dev/null | head -n1 || true)"
+    [ -n "$SQFILE" ] || die "Live filesystem not found. Boot the OldDeb ISO and retry."
+    MNT_SQ="$(mktemp -d)"
+    mount -o loop,ro "$SQFILE" "$MNT_SQ" || die "Cannot mount $SQFILE"
+    SQ="$MNT_SQ"
+fi
+
+# --- find the disk we booted from, so it is not offered as a target ---
+LIVE_SRC="$(findmnt -no SOURCE /run/live/medium 2>/dev/null || findmnt -no SOURCE /lib/live/mount/medium 2>/dev/null || true)"
+LIVE_DISK=""
+if [ -n "$LIVE_SRC" ]; then
+    LIVE_DISK="$(lsblk -no PKNAME "$LIVE_SRC" 2>/dev/null | head -n1 || true)"
+fi
+
+# --- target disk menu ---
+declare -a MENU=()
+while read -r name size model; do
+    [ -n "$name" ] || continue
+    case "$name" in
+        loop*|ram*|sr*|zram*|fd*) continue ;;
+    esac
+    [ "$name" = "$LIVE_DISK" ] && continue
+    MENU+=("$name" "${size}  ${model}")
+done < <(lsblk -dno NAME,SIZE,MODEL 2>/dev/null)
+
+[ "${#MENU[@]}" -gt 0 ] || die "No installable disk found."
+
+DISK="$(whiptail --title "$TITLE" --menu \
+    "Select the disk to install OldDeb on.\n\nALL DATA ON THE SELECTED DISK WILL BE ERASED." \
+    22 78 12 "${MENU[@]}" 3>&1 1>&2 2>&3)" || exit 0
+
+DEV="/dev/$DISK"
+[ -b "$DEV" ] || die "$DEV is not a block device."
+
+CONFIRM="$(whiptail --title "$TITLE" --inputbox \
+    "Type ERASE to confirm formatting $DEV:" 12 60 3>&1 1>&2 2>&3)" || exit 0
+[ "$CONFIRM" = "ERASE" ] || die "Confirmation failed; nothing was changed."
+
+while :; do
+    HOSTNAME="$(whiptail --title "$TITLE" --inputbox "Hostname:" 10 60 "olddeb" 3>&1 1>&2 2>&3)" || exit 0
+    if echo "$HOSTNAME" | grep -qE '^[A-Za-z0-9][A-Za-z0-9-]*$'; then
+        break
+    fi
+    whiptail --title "$TITLE" --msgbox "Invalid hostname. Use letters, digits and hyphens." 10 60
+done
+
+while :; do
+    PASS1="$(whiptail --title "$TITLE" --passwordbox "New password for user 'user':" 10 60 3>&1 1>&2 2>&3)" || exit 0
+    if [ -z "$PASS1" ] || echo "$PASS1" | grep -q ':'; then
+        whiptail --title "$TITLE" --msgbox "Password must be non-empty and must not contain ':'." 10 60
+        continue
+    fi
+    PASS2="$(whiptail --title "$TITLE" --passwordbox "Repeat password:" 10 60 3>&1 1>&2 2>&3)" || exit 0
+    [ "$PASS1" = "$PASS2" ] && break
+    whiptail --title "$TITLE" --msgbox "Passwords do not match." 10 60
+done
+
+if whiptail --title "$TITLE" --yesno "Enable automatic login on tty1?" 10 60; then
+    AUTOLOGIN=1
+else
+    AUTOLOGIN=0
+fi
+
+if whiptail --title "$TITLE" --yesno "Enable the SSH server on boot?" 10 60; then
+    ENABLE_SSH=1
+else
+    ENABLE_SSH=0
+fi
+
+# --- partition and format ---
+whiptail --title "$TITLE" --infobox "Partitioning $DEV ..." 8 70
+parted -s "$DEV" mklabel msdos || die "parted mklabel failed"
+parted -s "$DEV" mkpart primary ext4 2MiB 100% || die "parted mkpart failed"
+parted -s "$DEV" set 1 boot on >/dev/null 2>&1 || true
+partprobe "$DEV" >/dev/null 2>&1 || true
+sleep 2
+
+case "$DEV" in
+    *[0-9]) PART="${DEV}p1" ;;
+    *)      PART="${DEV}1" ;;
+esac
+[ -b "$PART" ] || die "Partition $PART did not appear."
+
+whiptail --title "$TITLE" --infobox "Creating ext4 filesystem on $PART ..." 8 70
+mkfs.ext4 -F -L olddeb "$PART" >/dev/null || die "mkfs.ext4 failed"
+
+MNT="$(mktemp -d)"
+mount "$PART" "$MNT" || die "Cannot mount $PART"
+
+# --- copy the live system ---
+whiptail --title "$TITLE" --infobox "Copying the system to $PART (several minutes) ..." 8 70
+rsync -aHAX --numeric-ids \
+    --exclude=/proc/* --exclude=/sys/* --exclude=/dev/* --exclude=/run/* \
+    --exclude=/tmp/* --exclude=/var/tmp/* --exclude=/mnt/* --exclude=/media/* \
+    --exclude=/live/* --exclude=/lib/live/mount/* \
+    "$SQ/" "$MNT/" || die "rsync failed"
+
+ROOT_UUID="$(blkid -s UUID -o value "$PART")"
+[ -n "$ROOT_UUID" ] || die "Cannot read the UUID of $PART."
+
+cat > "$MNT/etc/fstab" <<EOF
+UUID=$ROOT_UUID  /  ext4  errors=remount-ro  0  1
+EOF
+
+echo "$HOSTNAME" > "$MNT/etc/hostname"
+cat > "$MNT/etc/hosts" <<EOF
+127.0.0.1 localhost
+127.0.1.1 $HOSTNAME
+::1 localhost ip6-localhost ip6-loopback
+EOF
+
+rm -f "$MNT/etc/machine-id"
+touch "$MNT/etc/machine-id"
+
+# Installed systems use password-based sudo, not the live passwordless rule.
+rm -f "$MNT/etc/sudoers.d/olddeb-live"
+
+printf 'user:%s\n' "$PASS1" | chroot "$MNT" chpasswd || die "Cannot set the user password."
+
+if [ "$AUTOLOGIN" = 0 ]; then
+    rm -f "$MNT/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+fi
+
+if [ "$ENABLE_SSH" = 1 ]; then
+    chroot "$MNT" systemctl enable ssh.service >/dev/null 2>&1 || true
+else
+    chroot "$MNT" systemctl disable ssh.service >/dev/null 2>&1 || true
+fi
+
+# --- bootloader ---
+for d in dev proc sys run; do
+    mkdir -p "$MNT/$d"
+    mount --bind "/$d" "$MNT/$d" || die "Bind mount of /$d failed."
+done
+
+# Host keys for the installed system (needs /dev/urandom).
+rm -f "$MNT"/etc/ssh/ssh_host_* 2>/dev/null || true
+chroot "$MNT" ssh-keygen -A >/dev/null 2>&1 || true
+
+cat > "$MNT/etc/default/grub" <<'EOF'
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=3
+GRUB_DISTRIBUTOR="OldDeb"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet console=tty0 console=ttyS0,115200"
+GRUB_CMDLINE_LINUX=""
+GRUB_DISABLE_OS_PROBER=true
+EOF
+
+chroot "$MNT" grub-install --target=i386-pc --recheck "$DEV" >/dev/null || die "grub-install failed."
+chroot "$MNT" update-grub >/dev/null || die "update-grub failed."
+
+sync
+cleanup
+trap - EXIT
+
+if whiptail --title "$TITLE" --yesno \
+    "Installation complete.\n\nRemove the live medium and reboot now?" 12 72; then
+    reboot
+fi

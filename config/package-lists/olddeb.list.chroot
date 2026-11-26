@@ -1,0 +1,121 @@
+# OldDeb 12 CLI package set
+# One package per line; comments start with '#'
+# live-boot / live-config / live-config-systemd and the kernel are added by live-build
+
+# --- base ---
+systemd-sysv
+dbus
+dhcpcd-base
+locales
+console-setup
+keyboard-configuration
+kbd
+sudo
+passwd
+adduser
+apt
+apt-utils
+ca-certificates
+gnupg
+less
+nano
+vim-tiny
+bash-completion
+man-db
+manpages
+cron
+
+# --- networking ---
+iproute2
+iputils-ping
+net-tools
+curl
+wget
+dnsutils
+netcat-openbsd
+traceroute
+mtr-tiny
+openssh-client
+openssh-server
+wpasupplicant
+iw
+wireless-tools
+rfkill
+wireless-regdb
+ppp
+pppoeconf
+wvdial
+
+# --- old hardware support ---
+pcmciautils
+setserial
+acpi
+acpid
+lm-sensors
+cpufrequtils
+hdparm
+smartmontools
+pciutils
+usbutils
+hwdata
+lshw
+dmidecode
+
+# --- firmware (specific, avoids the huge amdgpu blob) ---
+firmware-linux-free
+firmware-iwlwifi
+firmware-ipw2x00
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-libertas
+firmware-zd1211
+
+# --- storage / filesystems / archives ---
+e2fsprogs
+dosfstools
+exfatprogs
+ntfs-3g
+parted
+gdisk
+rsync
+tar
+cpio
+xz-utils
+zstd
+bzip2
+gzip
+zip
+unzip
+
+# --- low RAM / monitoring / tools ---
+zram-tools
+earlyoom
+haveged
+htop
+procps
+psmisc
+lsof
+strace
+file
+tree
+bc
+tmux
+screen
+mc
+links2
+w3m
+mutt
+
+# --- installer ---
+grub-common
+grub2-common
+grub-pc-bin
+squashfs-tools
+whiptail
+dialog
+# isohybrid (used by live-build's ISO stage)
+syslinux-utils
+
+# --- CPU microcode ---
+intel-microcode

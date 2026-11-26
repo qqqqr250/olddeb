@@ -1,0 +1,44 @@
+#!/bin/sh
+set -e
+export DEBIAN_FRONTEND=noninteractive
+
+ARCH="$(dpkg --print-architecture)"
+
+# intel-microcode is in the shared package list; amd64 needs the AMD blob too.
+if [ "$ARCH" = "amd64" ]; then
+    apt-get install -y --no-install-recommends amd64-microcode
+fi
+
+# Services needed on old/low-RAM machines.
+systemctl enable olddeb-resolv.service
+systemctl enable dhcpcd.service
+systemctl enable zramswap.service
+systemctl enable earlyoom.service
+systemctl enable haveged.service
+systemctl enable acpid.service
+systemctl enable cron.service
+
+# Serial console login (harmless on machines without a serial port).
+systemctl enable serial-getty@ttyS0.service
+
+# systemd-networkd/systemd-resolved are not used; dhcpcd owns DHCP and DNS.
+systemctl disable systemd-networkd.service 2>/dev/null || true
+systemctl disable systemd-resolved.service 2>/dev/null || true
+
+# If an older build pulled in systemd-resolved, replace its resolv.conf symlink
+# and switch to dhcpcd.
+if dpkg -s systemd-resolved >/dev/null 2>&1; then
+    printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > /etc/resolv.conf
+    apt-get purge -y systemd-resolved
+fi
+if ! dpkg -s dhcpcd-base >/dev/null 2>&1; then
+    printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > /etc/resolv.conf
+    apt-get install -y --no-install-recommends dhcpcd-base
+fi
+printf 'nameserver 1.1.1.1\nnameserver 9.9.9.9\n' > /etc/resolv.conf
+
+# SSH is installed but off by default: the live password is public.
+systemctl disable ssh.service 2>/dev/null || true
+
+# dhcpcd owns the interfaces; keep ifupdown's service out of the way.
+systemctl disable networking.service 2>/dev/null || true

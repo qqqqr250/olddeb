@@ -1,0 +1,17 @@
+[Unit]
+Description=DHCP Client (dhcpcd)
+Documentation=man:dhcpcd(8)
+Wants=network.target
+Before=network.target
+After=network-pre.target
+After=wpa_supplicant.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/dhcpcd -q -b
+ExecStop=/usr/sbin/dhcpcd -x
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

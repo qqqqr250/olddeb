@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+apt-get clean
+rm -f /var/cache/apt/archives/*.deb
+rm -rf /tmp/* /var/tmp/*
+find /var/log -type f -exec truncate -s 0 {} \; 2>/dev/null || true
+
+# Regenerated on first boot, so cloned installs get unique IDs.
+rm -f /etc/machine-id
+touch /etc/machine-id

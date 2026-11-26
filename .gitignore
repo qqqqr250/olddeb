@@ -1,0 +1,6 @@
+build/
+out/
+*.iso
+*.img
+*.zst
+probe-*.txt

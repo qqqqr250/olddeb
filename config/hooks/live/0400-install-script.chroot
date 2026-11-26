@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+chmod 0755 /usr/local/sbin/install-to-disk /usr/local/sbin/wifi-connect
+ln -sf /usr/local/sbin/install-to-disk /usr/local/bin/install-to-disk
+ln -sf /usr/local/sbin/wifi-connect /usr/local/bin/wifi-connect
