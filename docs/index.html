@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OldDeb — tiny, plain &amp; old-hardware-friendly Linux</title>
+<meta name="description" content="A Debian 12 based, command-line-only live system for old PCs. BIOS, i386 and amd64, live ISO with installer and persistence, raw disk images and rootfs tarballs.">
+<meta property="og:title" content="OldDeb — tiny, plain &amp; old-hardware-friendly Linux">
+<meta property="og:description" content="Debian 12 bookworm · CLI only · BIOS · i386 + amd64">
+<meta property="og:image" content="https://qqqqr250.github.io/olddeb/assets/social-card.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0d10'/%3E%3Cpath d='M9 9v14M9 9h7a4 4 0 0 1 0 8H9m0 0h8a4 4 0 0 1 0 8H9' stroke='%238bd17c' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #111418;
+    --panel-2: #0e1116;
+    --text: #e8ebef;
+    --dim: #98a0ac;
+    --faint: #6c7480;
+    --accent: #8bd17c;
+    --accent-dim: #3f6b39;
+    --line: #22272e;
+    --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.65 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre, .mono { font-family: var(--mono); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  header .wrap {
+    display: flex; align-items: center; gap: 24px;
+    height: 60px;
+  }
+  .brand {
+    font-family: var(--mono); font-weight: 700; font-size: 18px;
+    color: var(--text); letter-spacing: -0.02em;
+  }
+  .brand::before {
+    content: ""; display: inline-block; width: 3px; height: 16px;
+    background: var(--accent); margin-right: 10px; vertical-align: -2px;
+  }
+  nav { margin-left: auto; display: flex; gap: 22px; }
+  nav a {
+    color: var(--dim); font-family: var(--mono); font-size: 13px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  nav a:hover { color: var(--text); text-decoration: none; }
+
+  .hero { padding: 88px 0 56px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--mono); font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.12; letter-spacing: -0.03em; margin: 0 0 20px;
+    font-weight: 700; max-width: 16ch;
+  }
+  .lede { color: var(--dim); font-size: 19px; max-width: 58ch; margin: 0 0 34px; }
+  .lede strong { color: var(--text); font-weight: 600; }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    display: inline-block; font-family: var(--mono); font-size: 14px;
+    padding: 11px 18px; border-radius: 6px; border: 1px solid var(--line);
+    color: var(--text); background: var(--panel);
+  }
+  .btn:hover { text-decoration: none; border-color: var(--faint); }
+  .btn.primary {
+    background: var(--accent); border-color: var(--accent); color: #0b120a;
+    font-weight: 700;
+  }
+  .btn.primary:hover { background: #9ddd8f; }
+  .btn small { font-weight: 400; opacity: 0.75; }
+  .cta .all { font-family: var(--mono); font-size: 13px; color: var(--dim); }
+
+  .shot { padding: 8px 0 72px; }
+  .shot img {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    background: #000;
+  }
+  .shot figcaption {
+    font-family: var(--mono); font-size: 12.5px; color: var(--faint);
+    margin-top: 12px;
+  }
+
+  section { padding: 12px 0 56px; }
+  h2 {
+    font-family: var(--mono); font-size: 13px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent);
+    margin: 0 0 26px; font-weight: 600;
+  }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  p { margin: 0 0 16px; }
+  .muted { color: var(--dim); }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 20px 22px;
+  }
+  .card h3 { font-family: var(--mono); font-size: 15px; }
+  .card p { margin: 0; color: var(--dim); font-size: 14.5px; }
+  .card .tag {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.1em; text-transform: uppercase; display: block;
+    margin-bottom: 10px;
+  }
+
+  pre {
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px 18px; overflow-x: auto;
+    font-size: 13.5px; line-height: 1.7; margin: 0 0 16px;
+    color: #d6dbe2;
+  }
+  pre .c { color: var(--faint); }
+  pre .p { color: var(--accent); }
+  p code, li code, td code {
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; font-size: 13px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--faint); font-weight: 600;
+  }
+  td:first-child { font-family: var(--mono); font-size: 13px; color: var(--text); }
+  td { color: var(--dim); }
+  .ok { color: var(--accent); }
+
+  .note {
+    border-left: 2px solid var(--accent-dim); background: var(--panel);
+    padding: 14px 18px; border-radius: 0 6px 6px 0; color: var(--dim);
+    font-size: 14.5px; margin: 0 0 16px;
+  }
+  .note strong { color: var(--text); }
+
+  ul { margin: 0 0 16px; padding-left: 22px; color: var(--dim); }
+  li { margin-bottom: 6px; }
+
+  footer {
+    border-top: 1px solid var(--line); margin-top: 24px;
+    padding: 32px 0 48px; color: var(--faint); font-size: 13.5px;
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: center; }
+  footer .mono { color: var(--dim); }
+  footer .right { margin-left: auto; display: flex; gap: 22px; }
+
+  @media (max-width: 640px) {
+    nav { gap: 14px; }
+    nav a.hide-sm { display: none; }
+    .hero { padding-top: 56px; }
+    .grid { grid-template-columns: 1fr; }
+    footer .right { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/olddeb/">OldDeb</a>
+    <nav>
+      <a href="#install">Install</a>
+      <a href="#downloads">Downloads</a>
+      <a href="#build" class="hide-sm">Build</a>
+      <a href="https://github.com/qqqqr250/olddeb">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="hero">
+      <div class="eyebrow">Debian 12 · bookworm · i386 + amd64</div>
+      <h1>A tiny Linux for computers that still have a job to do.</h1>
+      <p class="lede">
+        OldDeb is a <strong>command-line-only</strong> live system for old PCs:
+        a BIOS-booting ISO with an installer and optional persistence, plus
+        disk images and rootfs tarballs. No desktop, no bloat, no surprises.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/qqqqr250/olddeb/releases/latest/download/olddeb-12-i386-cli.iso">Download i386 <small>506 MB</small></a>
+        <a class="btn" href="https://github.com/qqqqr250/olddeb/releases/latest/download/olddeb-12-amd64-cli.iso">Download amd64 <small>540 MB</small></a>
+        <a class="all" href="https://github.com/qqqqr250/olddeb/releases/latest">all artifacts &amp; checksums →</a>
+      </div>
+    </div>
+
+    <figure class="shot">
+      <img src="assets/terminal.png" alt="OldDeb live session: login prompt, kernel banner and a short help message">
+      <figcaption>Live session, i386, 256 MB RAM — QEMU serial console.</figcaption>
+    </figure>
+
+    <section id="why">
+      <h2>Why it exists</h2>
+      <div class="grid">
+        <div class="card">
+          <span class="tag">old iron first</span>
+          <h3>Runs where modern distros won't</h3>
+          <p>i686 minimum, 256 MB RAM to boot, plain BIOS. Two architectures:
+          non-PAE 32-bit and 64-bit. Debian 12 is the last bootable 32-bit
+          Debian, supported until June 2028.</p>
+        </div>
+        <div class="card">
+          <span class="tag">cli only</span>
+          <h3>Nothing but a shell</h3>
+          <p>No desktop, no display manager, no browser. It boots to a login
+          prompt and stays out of the way. Every installed package is listed in
+          the release.</p>
+        </div>
+        <div class="card">
+          <span class="tag">live · install · persist</span>
+          <h3>Try it, keep it, move it</h3>
+          <p>Boot the ISO, log in, and run <code>sudo install-to-disk</code> for
+          a guided install. Or keep the live system on a stick with a
+          <code>persistence</code> partition.</p>
+        </div>
+        <div class="card">
+          <span class="tag">low ram</span>
+          <h3>Tuned for small machines</h3>
+          <p>zram swap (50 %, zstd), earlyoom, volatile journald and relaxed
+          vm settings. Networking through dhcpcd, Wi-Fi with one command.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <p class="muted">Write the ISO to a USB stick or CD-RW, boot it, and install:</p>
+<pre><span class="c"># on any Linux machine</span>
+gh release download v12 -R qqqqr250/olddeb
+sha256sum -c SHA256SUMS
+<span class="p">sudo</span> dd if=olddeb-12-i386-cli.iso of=/dev/sdX bs=4M status=progress conv=fsync
+
+<span class="c"># then boot the stick: user / live</span>
+<span class="p">sudo</span> install-to-disk</pre>
+      <p class="muted">The installer asks for the target disk, hostname, user and
+      password, and installs GRUB. Everything on the target disk is erased.</p>
+
+      <h3 style="margin-top:28px">Or write a disk image directly</h3>
+<pre>zstd -d olddeb-12-i386.img.zst -o olddeb.img
+<span class="p">sudo</span> dd if=olddeb.img of=/dev/sdX bs=4M status=progress conv=fsync</pre>
+      <p class="muted">Disk-image login: <code>user</code> / <code>live</code>;
+      <code>sudo</code> asks for the password, no autologin. The image grows to
+      fill the card if you resize the partition.</p>
+
+      <div class="note">
+        <strong>Persistence.</strong> Create an ext4 partition labelled
+        <code>persistence</code> on the stick with <code>/ union</code> in
+        <code>persistence.conf</code>. The default command line already contains
+        <code>persistence</code>, so changes survive reboots.
+      </div>
+
+      <div class="note">
+        <strong>Ventoy</strong> works on BIOS machines (tested with 1.1.18,
+        “Boot in normal mode”). UEFI and Secure Boot are not supported — the ISO
+        has no EFI bootloader. Ventoy’s <code>.dat</code> persistence is
+        casper-only; use the ext4 partition above instead.
+      </div>
+    </section>
+
+    <section id="downloads">
+      <h2>Downloads</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Size</th><th>What it is</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>olddeb-12-i386-cli.iso</td><td>506 MB</td><td>live ISO + installer, 32-bit</td></tr>
+          <tr><td>olddeb-12-amd64-cli.iso</td><td>540 MB</td><td>live ISO + installer, 64-bit</td></tr>
+          <tr><td>olddeb-12-i386.img.zst</td><td>410 MB</td><td>raw MBR/ext4 disk image with GRUB</td></tr>
+          <tr><td>olddeb-12-amd64.img.zst</td><td>428 MB</td><td>raw MBR/ext4 disk image with GRUB</td></tr>
+          <tr><td>olddeb-12-i386-rootfs.tar.zst</td><td>414 MB</td><td>root filesystem tarball</td></tr>
+          <tr><td>olddeb-12-amd64-rootfs.tar.zst</td><td>430 MB</td><td>root filesystem tarball</td></tr>
+          <tr><td>SHA256SUMS</td><td>—</td><td>checksums for everything above</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:16px">
+        <a href="https://github.com/qqqqr250/olddeb/releases/latest">Get them from the latest release →</a>
+      </p>
+    </section>
+
+    <section id="build">
+      <h2>Build it yourself</h2>
+      <p class="muted">Requires a Debian or Ubuntu host with live-build. The
+      scripts install what they need and build outside the source tree:</p>
+<pre>git clone https://github.com/qqqqr250/olddeb
+<span class="p">cd</span> olddeb
+<span class="p">sudo</span> ./scripts/build.sh i386      <span class="c"># or amd64</span>
+<span class="p">sudo</span> ./scripts/make-disk-image.sh i386
+<span class="p">sudo</span> ./scripts/make-rootfs.sh i386</pre>
+      <p class="muted">Artifacts land in <code>out/</code>. The build is
+      reproducible from a clean Debian 12 host; a full i386 build takes about
+      20 minutes on four cores.</p>
+    </section>
+
+    <section id="verified">
+      <h2>Verified in QEMU</h2>
+      <table>
+        <thead><tr><th>Test</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>i386 ISO, 256 MB RAM</td><td class="ok">login, DHCP/DNS, zram, earlyoom, sudo</td></tr>
+          <tr><td>amd64 ISO, 512 MB RAM</td><td class="ok">login, DHCP/DNS, zram, earlyoom, sudo</td></tr>
+          <tr><td>raw images</td><td class="ok">GRUB boots from disk, root on UUID</td></tr>
+          <tr><td>persistence</td><td class="ok">file survived a reboot (2 layouts)</td></tr>
+          <tr><td>Ventoy 1.1.18, BIOS</td><td class="ok">detected and booted in normal mode</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:16px">
+        <a href="https://github.com/qqqqr250/olddeb/tree/main/verification">Serial-console logs and screenshots →</a>
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="mono">OldDeb 12 · MIT</span>
+    <span>Debian 12 LTS ends June 2028.</span>
+    <span class="right">
+      <a href="https://github.com/qqqqr250/olddeb">Source</a>
+      <a href="https://github.com/qqqqr250/olddeb/releases">Releases</a>
+      <a href="https://github.com/qqqqr250/olddeb/issues">Issues</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>
