@@ -1,0 +1,61 @@
+/home/i/build my own linux/out/olddeb-12-amd64.img.zst: 2172649472 bytes 
++ qemu-system-x86_64 -enable-kvm -m 512 -cpu host -drive file=/var/tmp/olddeb-amd64-disktest-run.img,format=raw,if=ide -nic user,model=e1000 -nographic
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+
+
+iPXE (https://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+1EFCAE60+1EF0AE60 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from Hard Disk...
+GRUB loading.
+[0;30;47mWelcome to GRUB!
+
+
+OldDeb 12 (bookworm) CLI  olddeb  ttyS0
+olddeb login: user
+user
+Password: live
+
+Linux olddeb 6.1.0-56-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.192-2 (2026-11-16) x86_64
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+[?2004huser@olddeb:~$ cat /etc/os-release | head -3
+cat /etc/os-release | head -3
+[?2004lPRETTY_NAME="OldDeb 12 (bookworm) CLI"
+NAME="OldDeb"
+VERSION_ID="12"
+[?2004huser@olddeb:~$ findmnt -no SOURCE,FSTYPE /
+findmnt -no SOURCE,FSTYPE /
+[?2004l/dev/sda1 ext4
+[?2004huser@olddeb:~$ip -br a
+ ip -br a
+[?2004llo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens3             UP             fec0::7538:e8ef:3ccc:5416/64 fe80::7aa1:f9bc:866a:dc95/64 
+[?2004huser@olddeb:~$ systemctl --failed --no-legend
+systemctl --failed --no-legend
+[?2004l[K[?2004huser@olddeb:~$ sudo -n true; echo rc=$?
+sudo -n true; echo rc=$?
+[?2004lsudo: a password is required
+rc=1
+echo live | sudo -S poweroff
+[?2004huser@olddeb:~$ echo live | sudo -S poweroff
+[?2004l[sudo] password for user: 
+Broadcast message from root@olddeb on pts/0 (Thu 2026-11-26 07:36:13 UTC):
+
+The system will power off now!
+
+[?2004huser@olddeb:~$ [   32.009633] reboot: Power down
+
+DISK IMAGE BOOT OK

@@ -74,8 +74,9 @@ Each artifact in `out/` was booted in QEMU (KVM, BIOS):
 | `amd64` raw image | GRUB boots from disk, root on UUID, `sudo` asks for password |
 | i386 ISO via Ventoy 1.1.18 | detected in the Ventoy menu, boots in normal mode (BIOS) |
 
-Serial-console logs are in `out/verification/`. `out/SHA256SUMS` and
-`out/MANIFEST.txt` list the released files.
+Serial-console logs are in [`verification/`](verification/) (also copied to
+`out/verification/` by the build). `out/SHA256SUMS` and `out/MANIFEST.txt` list
+the released files.
 
 ## Install to a real disk
 

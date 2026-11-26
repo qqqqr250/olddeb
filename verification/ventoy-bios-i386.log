@@ -1,0 +1,68 @@
++ qemu-system-i386 -enable-kvm -m 1024 -cpu qemu32 -drive file=/var/tmp/ventoy.img,format=raw,if=ide -nic user,model=e1000 -display none -serial stdio -monitor unix:/tmp/opencode/ventoy-mon,server,nowait
+
+OldDeb 12 (bookworm) CLI  olddeb  ttyS0
+olddeb login: user
+user
+Password: live
+
+Linux olddeb 6.1.0-56-686 #1 SMP PREEMPT_DYNAMIC Debian 6.1.192-2 (2026-11-16) i686
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+[?2004huser@olddeb:~$ export PS1='@@ready@@ '
+export PS1='@@ready@@ '
+[?2004l[?2004h@@ready@@ cat /etc/os-release | head -2
+cat /etc/os-release | head -2
+[?2004lPRETTY_NAME="OldDeb 12 (bookworm) CLI"
+NAME="OldDeb"
+[?2004h@@ready@@cat /proc/cmdline
+ cat /proc/cmdline
+[?2004lBOOT_IMAGE=/live/vmlinuz initrd=/live/initrd.img boot=live config boot=live components quiet loglevel=3 hostname=olddeb console=tty0 console=ttyS0,115200 persistence persistence-encryption=none
+[?2004h@@ready@@lsblk -o NAME,SIZE,FSTYPE,LABEL | head -12
+ lsblk -o NAME,SIZE,FSTYPE,LABEL | head -12
+[?2004lNAME             SIZE FSTYPE   LABEL
+fd0                4K          
+loop0          457.3M squashfs 
+sda                6G          
+├─sda1             5G exfat    Ventoy
+│ └─VentoyPart     5G exfat    Ventoy
+└─sda2            32M          
+sr0             1024M          
+zram0          497.1M          
+[?2004h@@ready@@ ip -br a
+ip -br a
+[?2004llo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens3             UP             10.0.2.15/24 fec0::f37b:f2da:b129:9fc5/64 fec0::5054:ff:fe12:3456/64 fe80::5054:ff:fe12:3456/64 
+[?2004h@@ready@@ systemctl is-active dhcpcd zramswap earlyoom
+systemctl is-active dhcpcd zramswap earlyoom
+[?2004lactive
+active
+active
+[?2004h@@ready@@sudo -n true && echo SUDO_OK
+ sudo -n true && echo SUDO_OK
+[?2004lSUDO_OK
+[?2004h@@ready@@ sudo poweroff
+sudo poweroff
+[?2004l
+Broadcast message from root@olddeb on pts/0 (Thu 2026-11-26 08:05:55 UTC):
+
+The system will power off now!
+
+[?2004h@@ready@@ [[0;1;31mFAILED[0m] Failed unmounting [0;1;39mrun-live…dium.mount[0m - /run/live/medium.
+[   42.595698] (sd-umount)[1715]: Failed to unmount /run/live/medium: Device or resource busy
+[   42.604825] systemd-shutdown[1]: Could not detach loopback /dev/loop0: Device or resource busy
+[   42.611209] systemd-shutdown[1]: Could not detach DM /dev/dm-0: Device or resource busy
+[   42.619592] systemd-shutdown[1]: Failed to finalize file systems, loop devices, DM devices, ignoring.
+[   42.657070] reboot: Power down
+
+VENTOY BOOT OK

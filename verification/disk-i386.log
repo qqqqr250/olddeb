@@ -1,0 +1,62 @@
+/home/i/build my own linux/out/olddeb-12-i386.img.zst: 1970274304 bytes 
++ qemu-system-i386 -enable-kvm -m 512 -cpu qemu32 -drive file=/var/tmp/olddeb-i386-disktest-run.img,format=raw,if=ide -nic user,model=e1000 -nographic
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+
+
+iPXE (https://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+1EFCAF30+1EF0AF30 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from Hard Disk...
+GRUB loading.
+[0;30;47mWelcome to GRUB!
+
+[    2.690017] mce: Unable to init MCE device (rc: -5)
+
+OldDeb 12 (bookworm) CLI  olddeb  ttyS0
+olddeb login: user
+user
+Password: live
+
+Linux olddeb 6.1.0-56-686 #1 SMP PREEMPT_DYNAMIC Debian 6.1.192-2 (2026-11-16) i686
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+[?2004h(live)user@olddeb:~$ cat /etc/os-release | head -3
+cat /etc/os-release | head -3
+[?2004lPRETTY_NAME="OldDeb 12 (bookworm) CLI"
+NAME="OldDeb"
+VERSION_ID="12"
+[?2004h(live)user@olddeb:~$ findmnt -no SOURCE,FSTYPE /
+findmnt -no SOURCE,FSTYPE /
+[?2004l/dev/sda1 ext4
+[?2004h(live)user@olddeb:~$ ip -br a
+ip -br a
+[?2004llo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens3             UP             fec0::be1d:1862:c0b8:961a/64 fe80::5ed2:b845:a14c:676f/64 
+[?2004h(live)user@olddeb:~$ systemctl --failed --no-legend
+systemctl --failed --no-legend
+[?2004l[K[?2004h(live)user@olddeb:~$ sudo -n true; echo rc=$?
+sudo -n true; echo rc=$?
+[?2004lsudo: a password is required
+rc=1
+[?2004h(live)user@olddeb:~$ echo live | sudo -S poweroff
+echo live | sudo -S poweroff
+[?2004l[sudo] password for user: 
+Broadcast message from root@olddeb on pts/0 (Thu 2026-11-26 07:36:08 UTC):
+
+The system will power off now!
+
+[?2004h(live)user@olddeb:~$ [   38.609785] reboot: Power down
+
+DISK IMAGE BOOT OK

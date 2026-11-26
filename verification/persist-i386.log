@@ -1,0 +1,100 @@
+
+Warning: offset specified without an explicit file system size.
+Creating a file system with 65280 blocks but this might
+not be what you want.
+
++ boot
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+
+
+iPXE (https://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+1EFCAF30+1EF0AF30 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from DVD/CD...
+
+ISOLINUX 6.04 20240408 ETCD Copyright (C) 1994-2015 H. Peter Anvin et al
+[01;01Hc[?7l[2Jc[?7l[2J
+OldDeb 12 (bookworm) CLI  olddeb  ttyS0
+olddeb login: user
+user
+Password: live
+
+Linux olddeb 6.1.0-56-686 #1 SMP PREEMPT_DYNAMIC Debian 6.1.192-2 (2026-11-16) i686
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+[?2004huser@olddeb:~$ sudo sh -c 'echo olddeb-persistence-works > /root/persist-test'
+sudo sh -c 'echo olddeb-persistence-works > /root/persist-test'
+[?2004l[?2004huser@olddeb:~$ sudo sync
+sudo sync
+[?2004l[?2004huser@olddeb:~$ sudo poweroff
+sudo poweroff
+[?2004l
+Broadcast message from root@olddeb on pts/0 (Thu 2026-11-26 07:34:41 UTC):
+
+The system will power off now!
+
+[?2004huser@olddeb:~$ [[0;1;31mFAILED[0m] Failed unmounting [0;1;39mrun-live…dium.mount[0m - /run/live/medium.
+[  114.396263] (sd-umount)[1410]: Failed to unmount /run/live/medium: Device or resource busy
+[  114.413307] systemd-shutdown[1]: Could not detach loopback /dev/loop0: Device or resource busy
+[  114.433976] systemd-shutdown[1]: Failed to finalize file systems, loop devices, ignoring.
+[  114.514899] reboot: Power down
++ boot
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+
+
+iPXE (https://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+1EFCAF30+1EF0AF30 CA00
+Press Ctrl-B to configure iPXE (PCI 00:03.0)...                                                                               
+
+
+Booting from DVD/CD...
+
+ISOLINUX 6.04 20240408 ETCD Copyright (C) 1994-2015 H.[10;54H[10;55H Peter Anvin et al
+[01;01Hc[?7l[2Jc[?7l[2J
+OldDeb 12 (bookworm) CLI  olddeb  ttyS0
+olddeb login:user
+ user
+Password: live
+
+Linux olddeb 6.1.0-56-686 #1 SMP PREEMPT_DYNAMIC Debian 6.1.192-2 (2026-11-16) i686
+
+  OldDeb 12 (bookworm) -- CLI live system
+  ---------------------------------------
+
+  Install to disk:   sudo install-to-disk
+  Wi-Fi:             sudo wifi-connect "SSID" "password"
+  Network status:    ip -br a ; cat /etc/resolv.conf
+  SSH (disabled):    sudo systemctl start ssh
+  Low-RAM status:    zramctl ; free -h
+
+  Live user: user / live   (passwordless sudo)
+  Docs:      /usr/share/doc/olddeb/README.md
+
+[?2004huser@olddeb:~$ sudo cat /root/persist-test
+sudo cat /root/persist-test
+[?2004lolddeb-persistence-works
+[?2004huser@olddeb:~$ sudo poweroff
+sudo poweroff
+[?2004l
+Broadcast message from root@olddeb on pts/0 (Thu 2026-11-26 07:36:00 UTC):
+
+The system will power off now!
+
+[?2004huser@olddeb:~$ [[0;1;31mFAILED[0m] Failed unmounting [0;1;39mrun-live…dium.mount[0m - /run/live/medium.
+[   39.586059] (sd-umount)[1010]: Failed to unmount /run/live/medium: Device or resource busy
+[   39.593755] systemd-shutdown[1]: Could not detach loopback /dev/loop0: Device or resource busy
+[   39.602034] systemd-shutdown[1]: Failed to finalize file systems, loop devices, ignoring.
+[   39.651867] reboot: Power down
+
+PERSISTENCE TEST OK
