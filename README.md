@@ -15,7 +15,8 @@ and [download the latest release](https://github.com/qqqqr250/olddeb/releases/la
 ```sh
 gh release download v12 -R qqqqr250/olddeb
 sha256sum -c SHA256SUMS
-sudo dd if=olddeb-12-i386-cli.iso of=/dev/sdX bs=4M status=progress conv=fsync
+sudo dd if=olddeb-12-i386-cli.iso of=/dev/sdX \
+        bs=4M status=progress conv=fsync
 ```
 
 Boot the medium, log in as `user` / `live` (autologin on tty1, passwordless
